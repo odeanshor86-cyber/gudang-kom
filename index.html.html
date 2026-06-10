@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventaris Gudang Komputer</title>
+    <style>
+        :root {
+            --primary-dark: #0f172a; /* Biru Tua Sangat Gelap */
+            --primary-blue: #1e3a8a; /* Biru Utama */
+            --accent-blue: #3b82f6; /* Biru Terang */
+            --bg-light: #f1f5f9;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Utilities --- */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .p-4 { padding: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .w-full { width: 100%; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .text-sm { font-size: 0.875rem; }
+        .text-danger { color: var(--danger); }
+        .text-success { color: var(--success); }
+
+        /* --- Components --- */
+        button {
+            cursor: pointer;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .btn-primary { background-color: var(--primary-blue); color: var(--white); }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        .btn-secondary { background-color: var(--white); border: 1px solid var(--text-gray); color: var(--text-dark); }
+        .btn-danger { background-color: var(--danger); color: var(--white); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+
+        input, select, textarea {
+            padding: 0.7rem;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius);
+            width: 100%;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        input:focus, select:focus {
+            outline: 2px solid var(--accent-blue);
+            border-color: transparent;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+        }
+
+        /* --- Layout: Login --- */
+        #login-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-blue));
+        }
+        .login-box {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .login-logo {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        /* --- Layout: Main App --- */
+        #app-layout {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background-color: var(--primary-dark);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+        .brand {
+            padding: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+        nav a {
+            display: block;
+            padding: 0.8rem 1.5rem;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        nav a:hover, nav a.active {
+            background-color: rgba(255,255,255,0.1);
+            color: var(--white);
+            border-left: 4px solid var(--accent-blue);
+        }
+        .user-info {
+            padding: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background-color: var(--bg-light);
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        h2 { color: var(--primary-dark); }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary-blue);
+        }
+        .stat-card h3 { font-size: 0.9rem; color: var(--text-gray); margin-bottom: 0.5rem; }
+        .stat-card .value { font-size: 1.8rem; font-weight: bold; color: var(--primary-dark); }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #f8fafc;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        tr:hover { background-color: #f1f5f9; }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--white);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 1rem; right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-gray);
+        }
+
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: var(--primary-dark);
+            color: var(--white);
+            padding: 1rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            min-width: 250px;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.error { background: var(--danger); }
+        .toast.success { background: var(--success); }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* Mobile Responsive */
+        .menu-toggle { display: none; background: none; color: var(--primary-dark); font-size: 1.5rem; }
+        
+        @media (max-width: 768px) {
+            #app-layout { flex-direction: column; }
+            aside {
+                position: fixed;
+                top: 0; bottom: 0; left: -260px;
+                z-index: 100;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            }
+            aside.open { left: 0; }
+            .menu-toggle { display: block; }
+            main { padding: 1rem; margin-top: 60px; }
+            header { position: fixed; top: 0; left: 0; right: 0; background: var(--bg-light); z-index: 90; padding: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Print Styles */
+        @media print {
+            aside, header, .no-print, .btn-primary, .btn-secondary, .btn-danger { display: none !important; }
+            body, main, .card { background: white; height: auto; overflow: visible; box-shadow: none; }
+            .table-container { box-shadow: none; }
+            table { border: 1px solid #000; }
+            th, td { border: 1px solid #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Login Section -->
+    <section id="login-section">
+        <div class="login-box">
+            <div class="login-logo">📦 Gudang Kom</div>
+            <h3 class="mb-4">Login Sistem</h3>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Username (admin/petugas)" required>
+                <input type="password" id="password" placeholder="Password (admin123/petugas123)" required>
+                <button type="submit" class="btn-primary w-full">Masuk</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Main Application -->
+    <div id="app-layout" class="hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar">
+            <div class="brand">📦 Gudang Kom</div>
+            <nav>
+                <a onclick="router('dashboard')" id="nav-dashboard" class="active">Dashboard</a>
+                <a onclick="router('master-barang')" id="nav-master-barang">Master Barang</a>
+                <a onclick="router('barang-masuk')" id="nav-barang-masuk">Barang Masuk</a>
+                <a onclick="router('barang-keluar')" id="nav-barang-keluar">Barang Keluar</a>
+                <a onclick="router('pengembalian')" id="nav-pengembalian">Pengembalian</a>
+                <a onclick="router('mutasi')" id="nav-mutasi">Mutasi Barang</a>
+                <a onclick="router('stok')" id="nav-stok">Stok Barang</a>
+                <a onclick="router('laporan')" id="nav-laporan">Laporan</a>
+                <a onclick="router('pengaturan')" id="nav-pengaturan">Pengaturan</a>
+            </nav>
+            <div class="user-info">
+                <div id="user-display-name">Admin</div>
+                <button onclick="logout()" style="padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.2); color: white; font-size: 0.8rem;">Keluar</button>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <main>
+            <header>
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <h2 id="page-title">Dashboard</h2>
+                <div class="date-display" id="current-date"></div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="view-dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Jenis Barang</h3>
+                        <div class="value" id="stat-total-items">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Stok Barang</h3>
+                        <div class="value" id="stat-total-stock">0</div>
+                    </div>
+                    <div class="stat-card" style="border-color: var(--accent-blue);">
+                        <h3>Dipinjam</h3>
+                        <div class="value" id="stat-borrowed">0</div>
+                    </div>
+                    <div class="stat-card" style="border-color: var(--danger);">
+                        <h3>Belum Kembali (Telat)</h3>
+                        <div class="value" id="stat-overdue">0</div>
+                    </div>
+                    <div class="stat-card" style="border-color: var(--success);">
+                        <h3>Masuk Hari Ini</h3>
+                        <div class="value" id="stat-in-today">0</div>
+                    </div>
+                    <div class="stat-card" style="border-color: var(--warning);">
+                        <h3>Keluar Hari Ini</h3>
+                        <div class="value" id="stat-out-today">0</div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 flex-col md:flex-row">
+                    <div class="card w-full">
+                        <h3 class="mb-4">⚠️ Notifikasi Stok</h3>
+                        <div id="notification-stock-list"></div>
+                    </div>
+                    <div class="card w-full">
+                        <h3 class="mb-4">⏰ Barang Terlambat</h3>
+                        <div id="notification-overdue-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Master Barang View -->
+            <section id="view-master-barang" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <input type="text" id="search-master" placeholder="Cari Nama/Kode Barang..." style="max-width: 300px;">
+                    <button class="btn-primary" onclick="openModal('modal-barang')">+ Tambah Barang</button>
+                </div>
+                <div class="table-container">
+                    <thead>
+                        <!-- Table populated by JS -->
+                    </thead>
+                    <table id="table-master-barang">
+                        <thead>
+                            <tr>
+                                <th>Kode</th>
+                                <th>Nama Barang</th>
+                                <th>Kategori</th>
+                                <th>Lokasi</th>
+                                <th>Stok</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Barang Masuk View -->
+            <section id="view-barang-masuk" class="hidden">
+                <button class="btn-primary mb-4" onclick="openModal('modal-masuk')">+ Input Barang Masuk</button>
+                <div class="table-container">
+                    <table id="table-barang-masuk">
+                        <thead>
+                            <tr>
+                                <th>No. Transaksi</th>
+                                <th>Tanggal</th>
+                                <th>Barang</th>
+                                <th>Jml</th>
+                                <th>Penerima</th>
+                                <th>Foto</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Barang Keluar View -->
+            <section id="view-barang-keluar" class="hidden">
+                <button class="btn-primary mb-4" onclick="openModal('modal-keluar')">+ Input Peminjaman</button>
+                <div class="table-container">
+                    <table id="table-barang-keluar">
+                        <thead>
+                            <tr>
+                                <th>No. Peminjaman</th>
+                                <th>Peminjam</th>
+                                <th>Barang</th>
+                                <th>Jml</th>
+                                <th>Tgl Kembali</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Pengembalian View -->
+            <section id="view-pengembalian" class="hidden">
+                <div class="card mb-4">
+                    <h3>Cari Peminjaman</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="search-loan-id" placeholder="Masukkan Nomor Peminjaman">
+                        <button class="btn-primary" onclick="searchLoan()">Cari</button>
+                    </div>
+                </div>
+                <!-- Loan details will appear here -->
+                <div id="loan-details-container"></div>
+            </section>
+
+            <!-- Mutasi View -->
+            <section id="view-mutasi" class="hidden">
+                <button class="btn-primary mb-4" onclick="openModal('modal-mutasi')">+ Input Mutasi</button>
+                <div class="table-container">
+                    <table id="table-mutasi">
+                        <thead>
+                            <tr>
+                                <th>No. Mutasi</th>
+                                <th>Tanggal</th>
+                                <th>Barang</th>
+                                <th>Dari</th>
+                                <th>Ke</th>
+                                <th>Jml</th>
+                                <th>Petugas</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Stok View -->
+            <section id="view-stok" class="hidden">
+                <div class="flex gap-4 mb-4">
+                    <input type="text" id="filter-stok-name" placeholder="Nama Barang..." onkeyup="renderStockTable()">
+                    <select id="filter-stok-cat" onchange="renderStockTable()">
+                        <option value="">Semua Kategori</option>
+                        <option value="Elektronik">Elektronik</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Alat Tulis">Alat Tulis</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table id="table-stok">
+                        <thead>
+                            <tr>
+                                <th>Kode</th>
+                                <th>Nama Barang</th>
+                                <th>Kategori</th>
+                                <th>Stok</th>
+                                <th>Min. Stok</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Laporan View -->
+            <section id="view-laporan" class="hidden">
+                <div class="card no-print">
+                    <h3>Filter Laporan</h3>
+                    <div class="flex gap-2 items-end flex-col md:flex-row">
+                        <div class="w-full">
+                            <label class="text-sm">Jenis Laporan</label>
+                            <select id="report-type">
+                                <option value="masuk">Barang Masuk</option>
+                                <option value="keluar">Barang Keluar</option>
+                                <option value="mutasi">Mutasi</option>
+                                <option value="stok">Rekap Stok</option>
+                            </select>
+                        </div>
+                        <div class="w-full">
+                            <label class="text-sm">Dari Tanggal</label>
+                            <input type="date" id="report-start">
+                        </div>
+                        <div class="w-full">
+                            <label class="text-sm">Sampai Tanggal</label>
+                            <input type="date" id="report-end">
+                        </div>
+                        <div class="w-full">
+                            <button class="btn-primary w-full" onclick="generateReport()">Tampilkan</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-2 mb-4 no-print">
+                    <button class="btn-secondary" onclick="window.print()">🖨️ Cetak / PDF</button>
+                    <button class="btn-secondary" onclick="exportExcel()">📊 Export Excel (CSV)</button>
+                </div>
+                <div id="report-result" class="table-container">
+                    <p class="p-4 text-gray-500">Silakan pilih filter dan klik Tampilkan.</p>
+                </div>
+            </section>
+
+            <!-- Pengaturan View -->
+            <section id="view-pengaturan" class="hidden">
+                <div class="card">
+                    <h3>Profil Pengguna</h3>
+                    <p><strong>Login Sebagai:</strong> <span id="setting-role"></span></p>
+                    <p class="text-sm text-gray-500 mt-2">Aplikasi ini menggunakan LocalStorage untuk penyimpanan offline.</p>
+                </div>
+                <div class="card">
+                    <h3>Sinkronisasi Data (Firebase)</h3>
+                    <p class="mb-4 text-sm">Opsi untuk sinkronisasi ke cloud (Simulasi).</p>
+                    <button class="btn-primary" onclick="showToast('Sinkronisasi ke Firebase berhasil!', 'success')">Sync Sekarang</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Modal Barang -->
+    <div id="modal-barang" class="modal-overlay hidden">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-barang')">&times;</span>
+            <h2 class="mb-4">Form Barang</h2>
+            <form id="form-barang">
+                <input type="hidden" id="barang-id">
+                <label class="text-sm">Kode Barang</label>
+                <input type="text" id="barang-kode" required>
+                <div class="flex gap-2">
+                    <div class="w-full">
+                        <label class="text-sm">Nama Barang</label>
+                        <input type="text" id="barang-nama" required>
+                    </div>
+                    <div class="w-full">
+                        <label class="text-sm">Kategori</label>
+                        <select id="barang-kategori">
+                            <option>Elektronik</option>
+                            <option>Furniture</option>
+                            <option>Alat Tulis</option>
+                            <option>Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <div class="w-full">
+                        <label class="text-sm">Satuan</label>
+                        <input type="text" id="barang-satuan" placeholder="Pcs, Unit, Box">
+                    </div>
+                    <div class="w-full">
+                        <label class="text-sm">Lokasi Penyimpanan</label>
+                        <input type="text" id="barang-lokasi" required>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <div class="w-full">
+                        <label class="text-sm">Stok Minimum</label>
+                        <input type="number" id="barang-min" value="5" required>
+                    </div>
+                    <div class="w-full">
+                        <label class="text-sm">Stok Awal</label>
+                        <input type="number" id="barang-stok" value="0" required>
+                    </div>
+                </div>
+                <label class="text-sm">Keterangan</label>
+                <textarea id="barang-ket" rows="2"></textarea>
+                <button type="submit" class="btn-primary w-full mt-2">Simpan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Masuk -->
+    <div id="modal-masuk" class="modal-overlay hidden">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-masuk')">&times;</span>
+            <h2 class="mb-4">Input Barang Masuk</h2>
+            <form id="form-masuk">
+                <label class="text-sm">Nomor Transaksi (Auto)</label>
+                <input type="text" id="masuk-no" readonly class="bg-gray-100">
+                <div class="flex gap-2">
+                    <div class="w-full">
+                        <label class="text-sm">Tanggal</label>
+                        <input type="date" id="masuk-tgl" required>
+                    </div>
+                    <div class="w-full">
+                        <label class="text-sm">Hari</label>
+                        <input type="text" id="masuk-hari" readonly>
+                    </div>
+                </div>
+                <label class="text-sm">Barang</label>
+                <div class="flex gap-2">
+                    <select id="masuk-barang" required onchange="fillItemDetails('masuk')"></select>
+                    <button type="button" class="btn-secondary" onclick="simulateScan('masuk-barang')">📷 Scan</button>
+                </div>
+                <label class="text-sm">Jumlah</label>
+                <input type="number" id="masuk-jml" required>
+                <label class="text-sm">Nama Penerima</label>
+                <input type="text" id="masuk-penerima" required>
+                <label class="text-sm">NIP</label>
+                <input type="text" id="masuk-nip">
+                <label class="text-sm">Foto Dokumentasi</label>
+                <input type="file" id="masuk-foto" accept="image/*">
+                <label class="text-sm">Keterangan</label>
+                <textarea id="masuk-ket"></textarea>
+                <button type="submit" class="btn-primary w-full mt-2">Simpan Masuk</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Keluar -->
+    <div id="modal-keluar" class="modal-overlay hidden">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-keluar')">&times;</span>
+            <h2 class="mb-4">Input Peminjaman / Keluar</h2>
+            <form id="form-keluar">
+                <label class="text-sm">Nomor Peminjaman (Auto)</label>
+                <input type="text" id="keluar-no" readonly class="bg-gray-100">
+                <div class="flex gap-2">
+                    <div class="w-full">
+                        <label class="text-sm">Tanggal Pinjam</label>
+                        <input type="date" id="keluar-tgl" required>
+                    </div>
+                    <div class="w-full">
+                        <label class="text-sm">Tgl Pengembalian</label>
+                        <input type="date" id="keluar-tgl-kembali" required>
+                    </div>
+                </div>
+                <label class="text-sm">Nama Peminjam</label>
+                <input type="text" id="keluar-peminjam" required>
+                <div class="flex gap-2">
+                    <div class="w-full">
+                        <label class="text-sm">NIP</label>
+                        <input type="text" id="keluar-nip">
+                    </div>
+                    <div class="w-full">
+                        <label class="text-sm">Unit Kerja</label>
+                        <input type="text" id="keluar-unit">
+                    </div>
+                </div>
+                <label class="text-sm">Barang</label>
+                <div class="flex gap-2">
+                    <select id="keluar-barang" required onchange="fillItemDetails('keluar')"></select>
+                    <button type="button" class="btn-secondary" onclick="simulateScan('keluar-barang')">📷 Scan</button>
+                </div>
+                <label class="text-sm">Jumlah</label>
+                <input type="number" id="keluar-jml" required>
+                <label class="text-sm">Keperluan</label>
+                <textarea id="keluar-keperluan"></textarea>
+                <label class="text-sm">Kondisi Barang Saat Ini</label>
+                <input type="text" id="keluar-kondisi" placeholder="Baik, Rusak Ringan, dll">
+                <label class="text-sm">Foto Dokumentasi</label>
+                <input type="file" id="keluar-foto" accept="image/*">
+                <button type="submit" class="btn-primary w-full mt-2">Simpan Keluar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Mutasi -->
+    <div id="modal-mutasi" class="modal-overlay hidden">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-mutasi')">&times;</span>
+            <h2 class="mb-4">Mutasi Barang</h2>
+            <form id="form-mutasi">
+                <label class="text-sm">Nomor Mutasi (Auto)</label>
+                <input type="text" id="mutasi-no" readonly>
+                <div class="flex gap-2">
+                    <div class="w-full">
+                        <label class="text-sm">Tanggal</label>
+                        <input type="date" id="mutasi-tgl" required>
+                    </div>
+                </div>
+                <label class="text-sm">Barang</label>
+                <div class="flex gap-2">
+                    <select id="mutasi-barang" required></select>
+                    <button type="button" class="btn-secondary" onclick="simulateScan('mutasi-barang')">📷 Scan</button>
+                </div>
+                <label class="text-sm">Jumlah</label>
+                <input type="number" id="mutasi-jml" required>
+                <div class="flex gap-2">
+                    <div class="w-full">
+                        <label class="text-sm">Lokasi Asal</label>
+                        <input type="text" id="mutasi-asal" required>
+                    </div>
+                    <div class="w-full">
+                        <label class="text-sm">Lokasi Tujuan</label>
+                        <input type="text" id="mutasi-tujuan" required>
+                    </div>
+                </div>
+                <label class="text-sm">Nama Petugas</label>
+                <input type="text" id="mutasi-petugas" required>
+                <label class="text-sm">NIP Petugas</label>
+                <input type="text" id="mutasi-nip">
+                <label class="text-sm">Alasan</label>
+                <textarea id="mutasi-alasan"></textarea>
+                <button type="submit" class="btn-primary w-full mt-2">Simpan Mutasi</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Database Simulation (LocalStorage) ---
+        const DB = {
+            get: (key) => JSON.parse(localStorage.getItem('inv_' + key) || '[]'),
+            set: (key, data) => localStorage.setItem('inv_' + key, JSON.stringify(data)),
+            init: () => {
+                if (!localStorage.getItem('inv_users')) {
+                    DB.set('users', [
+                        { username: 'admin', password: 'admin123', role: 'Admin' },
+                        { username: 'petugas', password: 'petugas123', role: 'Petugas Gudang' }
+                    ]);
+                }
+            }
+        };
+
+        // --- State ---
+        let currentUser = null;
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            DB.init();
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            // Cek sesi login
+            const sessionUser = sessionStorage.getItem('inv_session');
+            if (sessionUser) {
+                currentUser = JSON.parse(sessionUser);
+                showApp();
+            }
+
+            // Event Listeners Forms
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('form-barang').addEventListener('submit', saveBarang);
+            document.getElementById('form-masuk').addEventListener('submit', saveMasuk);
+            document.getElementById('form-keluar').addEventListener('submit', saveKeluar);
+            document.getElementById('form-mutasi').addEventListener('submit', saveMutasi);
+            document.getElementById('search-master').addEventListener('keyup', renderMasterTable);
+        });
+
+        // --- Auth ---
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const users = DB.get('users');
+            
+            const user = users.find(x => x.username === u && x.password === p);
+            if (user) {
+                currentUser = user;
+                sessionStorage.setItem('inv_session', JSON.stringify(user));
+                showToast(`Selamat datang, ${user.username}`, 'success');
+                showApp();
+            } else {
+                showToast('Username atau password salah', 'error');
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('inv_session');
+            location.reload();
+        }
+
+        function showApp() {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('app-layout').classList.remove('hidden');
+            document.getElementById('user-display-name').textContent = currentUser.username;
+            document.getElementById('setting-role').textContent = currentUser.role;
+            
+            // Generate Auto Numbers
+            generateAutoNumbers();
+            
+            router('dashboard');
+        }
+
+        // --- Navigation ---
+        function router(pageId) {
+            // Hide all sections
+            document.querySelectorAll('main section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('nav a').forEach(el => el.classList.remove('active'));
+
+            // Show target
+            document.getElementById(`view-${pageId}`).classList.remove('hidden');
+            const navEl = document.getElementById(`nav-${pageId}`);
+            if (navEl) navEl.classList.add('active');
+
+            // Set Title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'master-barang': 'Master Barang',
+                'barang-masuk': 'Barang Masuk',
+                'barang-keluar': 'Barang Keluar',
+                'pengembalian': 'Pengembalian Barang',
+                'mutasi': 'Mutasi Barang',
+                'stok': 'Stok Barang',
+                'laporan': 'Laporan',
+                'pengaturan': 'Pengaturan'
+            };
+            document.getElementById('page-title').textContent = titles[pageId];
+
+            // Refresh Data based on page
+            if (pageId === 'dashboard') renderDashboard();
+            if (pageId === 'master-barang') renderMasterTable();
+            if (pageId === 'barang-masuk') renderMasukTable();
+            if (pageId === 'barang-keluar') renderKeluarTable();
+            if (pageId === 'mutasi') renderMutasiTable();
+            if (pageId === 'stok') renderStockTable();
+            
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // --- Dashboard Logic ---
+        function renderDashboard() {
+            const items = DB.get('items');
+            const transIn = DB.get('trans_in');
+            const transOut = DB.get('trans_out'); // Loans
+            const mutations = DB.get('mutations');
+            
+            const today = new Date().toISOString().split('T')[0];
+
+            // Stats
+            document.getElementById('stat-total-items').textContent = items.length;
+            document.getElementById('stat-total-stock').textContent = items.reduce((acc, i) => acc + parseInt(i.stock), 0);
+            
+            const activeLoans = transOut.filter(t => t.status === 'Dipinjam');
+            document.getElementById('stat-borrowed').textContent = activeLoans.length;
+            
+            const overdue = activeLoans.filter(t => t.tglKembali < today);
+            document.getElementById('stat-overdue').textContent = overdue.length;
+
+            document.getElementById('stat-in-today').textContent = transIn.filter(t => t.date === today).length;
+            
+            // Count Out today (Loans created today)
+            const outToday = transOut.filter(t => t.date === today).length; 
+            // Note: Prompt asks for "Barang Keluar" generally, but also "Mutasi Barang Hari Ini".
+            // Usually "Barang Keluar" implies Loans in this context, but could be sales. Assuming Loans.
+            document.getElementById('stat-out-today').textContent = outToday;
+
+            // Notifications
+            const notifStock = document.getElementById('notification-stock-list');
+            notifStock.innerHTML = '';
+            items.filter(i => parseInt(i.stock) <= parseInt(i.min)).forEach(i => {
+                notifStock.innerHTML += `<div class="p-2 mb-2 bg-red-50 text-red-700 rounded border border-red-200">⚠️ ${i.nama} (${i.stock} tersisa)</div>`;
+            });
+            if (items.filter(i => parseInt(i.stock) <= parseInt(i.min)).length === 0) {
+                notifStock.innerHTML = '<div class="text-gray-400">Aman. Tidak ada stok kritis.</div>';
+            }
+
+            const notifOverdue = document.getElementById('notification-overdue-list');
+            notifOverdue.innerHTML = '';
+            overdue.forEach(t => {
+                notifOverdue.innerHTML += `<div class="p-2 mb-2 bg-yellow-50 text-yellow-700 rounded border border-yellow-200">⏰ ${t.peminjam} - ${t.namaBarang} (Harus kembali: ${t.tglKembali})</div>`;
+            });
+            if (overdue.length === 0) {
+                notifOverdue.innerHTML = '<div class="text-gray-400">Tidak ada peminjaman terlambat.</div>';
+            }
+        }
+
+        // --- Master Barang ---
+        function renderMasterTable() {
+            const items = DB.get('items');
+            const keyword = document.getElementById('search-master').value.toLowerCase();
+            const tbody = document.querySelector('#table-master-barang tbody');
+            tbody.innerHTML = '';
+
+            items.filter(i => 
+                i.nama.toLowerCase().includes(keyword) || 
+                i.kode.toLowerCase().includes(keyword)
+            ).forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.kode}</td>
+                    <td>${item.nama}</td>
+                    <td>${item.kategori}</td>
+                    <td>${item.lokasi}</td>
+                    <td class="${item.stock <= item.min ? 'text-danger font-bold' : ''}">${item.stock}</td>
+                    <td>
+                        <button class="btn-secondary btn-sm" onclick="editBarang('${item.kode}')">Edit</button>
+                        <button class="btn-danger btn-sm" onclick="deleteBarang('${item.kode}')">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function saveBarang(e) {
+            e.preventDefault();
+            const id = document.getElementById('barang-id').value;
+            const data = {
+                kode: document.getElementById('barang-kode').value,
+                nama: document.getElementById('barang-nama').value,
+                kategori: document.getElementById('barang-kategori').value,
+                satuan: document.getElementById('barang-satuan').value,
+                lokasi: document.getElementById('barang-lokasi').value,
+                min: document.getElementById('barang-min').value,
+                stock: document.getElementById('barang-stok').value,
+                ket: document.getElementById('barang-ket').value
+            };
+
+            let items = DB.get('items');
+            
+            if (id) {
+                // Edit
+                const idx = items.findIndex(i => i.kode === id);
+                if (idx !== -1) items[idx] = data;
+                showToast('Barang diperbarui', 'success');
+            } else {
+                // Add
+                if (items.find(i => i.kode === data.kode)) {
+                    showToast('Kode barang sudah ada!', 'error');
+                    return;
+                }
+                items.push(data);
+                showToast('Barang ditambahkan', 'success');
+            }
+            
+            DB.set('items', items);
+            closeModal('modal-barang');
+            renderMasterTable();
+            e.target.reset();
+            document.getElementById('barang-id').value = '';
+        }
+
+        function editBarang(kode) {
+            const items = DB.get('items');
+            const item = items.find(i => i.kode === kode);
+            if (!item) return;
+
+            document.getElementById('barang-id').value = item.kode;
+            document.getElementById('barang-kode').value = item.kode;
+            document.getElementById('barang-nama').value = item.nama;
+            document.getElementById('barang-kategori').value = item.kategori;
+            document.getElementById('barang-satuan').value = item.satuan;
+            document.getElementById('barang-lokasi').value = item.lokasi;
+            document.getElementById('barang-min').value = item.min;
+            document.getElementById('barang-stok').value = item.stock;
+            document.getElementById('barang-ket').value = item.ket;
+            
+            openModal('modal-barang');
+        }
+
+        function deleteBarang(kode) {
+            if(confirm('Yakin hapus barang ini?')) {
+                let items = DB.get('items');
+                items = items.filter(i => i.kode !== kode);
+                DB.set('items', items);
+                renderMasterTable();
+                showToast('Barang dihapus', 'success');
+            }
+        }
+
+        // --- Helper: Populate Select ---
+        function populateItemSelect(selectId) {
+            const items = DB.get('items');
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">-- Pilih Barang --</option>';
+            items.forEach(i => {
+                select.innerHTML += `<option value="${i.kode}">${i.nama} (Stok: ${i.stock})</option>`;
+            });
+        }
+
+        function fillItemDetails(prefix) {
+            // Reserved for future features like auto-filling unit
+        }
+
+        function generateAutoNumbers() {
+            const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+            const rand = Math.floor(1000 + Math.random() * 9000);
+            
+            document.getElementById('masuk-no').value = `IN${dateStr}${rand}`;
+            document.getElementById('keluar-no').value = `OUT${dateStr}${rand}`;
+            document.getElementById('mutasi-no').value = `MT${dateStr}${rand}`;
+            
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('masuk-tgl').value = today;
+            document.getElementById('masuk-hari').value = new Date().toLocaleDateString('id-ID', {weekday: 'long'});
+            document.getElementById('keluar-tgl').value = today;
+            document.getElementById('mutasi-tgl').value = today;
+
+            populateItemSelect('masuk-barang');
+            populateItemSelect('keluar-barang');
+            populateItemSelect('mutasi-barang');
+        }
+
+        // --- Barang Masuk ---
+        function saveMasuk(e) {
+            e.preventDefault();
+            const kodeBarang = document.getElementById('masuk-barang').value;
+            const qty = parseInt(document.getElementById('masuk-jml').value);
+            
+            if(!kodeBarang) { showToast('Pilih barang', 'error'); return; }
+
+            // Update Stock
+            let items = DB.get('items');
+            const itemIdx = items.findIndex(i => i.kode === kodeBarang);
+            if (itemIdx === -1) { showToast('Barang tidak valid', 'error'); return; }
+            
+            items[itemIdx].stock = parseInt(items[itemIdx].stock) + qty;
+            DB.set('items', items);
+
+            // Save Transaction
+            let trans = DB.get('trans_in');
+            trans.push({
+                no: document.getElementById('masuk-no').value,
+                date: document.getElementById('masuk-tgl').value,
+                kodeBarang: kodeBarang,
+                namaBarang: items[itemIdx].nama,
+                qty: qty,
+                penerima: document.getElementById('masuk-penerima').value,
+                nip: document.getElementById('masuk-nip').value,
+                ket: document.getElementById('masuk-ket').value,
+                foto: 'simulated_photo_path.jpg' // Mock
+            });
+            DB.set('trans_in', trans);
+
+            showToast('Barang Masuk berhasil disimpan', 'success');
+            closeModal('modal-masuk');
+            e.target.reset();
+            generateAutoNumbers(); // Reset form
+            renderMasukTable();
+        }
+
+        function renderMasukTable() {
+            const trans = DB.get('trans_in').reverse(); // Newest first
+            const tbody = document.querySelector('#table-barang-masuk tbody');
+            tbody.innerHTML = '';
+            trans.forEach(t => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${t.no}</td>
+                        <td>${t.date}</td>
+                        <td>${t.namaBarang}</td>
+                        <td class="text-success font-bold">+${t.qty}</td>
+                        <td>${t.penerima}</td>
+                        <td><span class="text-sm text-gray-500">📷 ${t.foto}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- Barang Keluar (Peminjaman) ---
+        function saveKeluar(e) {
+            e.preventDefault();
+            const kodeBarang = document.getElementById('keluar-barang').value;
+            const qty = parseInt(document.getElementById('keluar-jml').value);
+            
+            if(!kodeBarang) { showToast('Pilih barang', 'error'); return; }
+
+            let items = DB.get('items');
+            const itemIdx = items.findIndex(i => i.kode === kodeBarang);
+            
+            if (items[itemIdx].stock < qty) {
+                showToast('Stok tidak mencukupi!', 'error');
+                return;
+            }
+
+            items[itemIdx].stock = parseInt(items[itemIdx].stock) - qty;
+            DB.set('items', items);
+
+            let trans = DB.get('trans_out');
+            trans.push({
+                no: document.getElementById('keluar-no').value,
+                date: document.getElementById('keluar-tgl').value,
+                tglKembali: document.getElementById('keluar-tgl-kembali').value,
+                peminjam: document.getElementById('keluar-peminjam').value,
+                nip: document.getElementById('keluar-nip').value,
+                unit: document.getElementById('keluar-unit').value,
+                kodeBarang: kodeBarang,
+                namaBarang: items[itemIdx].nama,
+                qty: qty,
+                keperluan: document.getElementById('keluar-keperluan').value,
+                kondisi: document.getElementById('keluar-kondisi').value,
+                status: 'Dipinjam',
+                foto: 'simulated_photo.jpg'
+            });
+            DB.set('trans_out', trans);
+
+            showToast('Peminjaman berhasil dicatat', 'success');
+            closeModal('modal-keluar');
+            e.target.reset();
+            generateAutoNumbers();
+            renderKeluarTable();
+        }
+
+        function renderKeluarTable() {
+            const trans = DB.get('trans_out').reverse();
+            const tbody = document.querySelector('#table-barang-keluar tbody');
+            tbody.innerHTML = '';
+            trans.forEach(t => {
+                const statusClass = t.status === 'Kembali' ? 'text-success' : 'text-danger';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${t.no}</td>
+                        <td>${t.peminjam}<br><small>${t.unit}</small></td>
+                        <td>${t.namaBarang}</td>
+                        <td class="text-danger font-bold">-${t.qty}</td>
+                        <td>${t.tglKembali}</td>
+                        <td class="${statusClass} font-bold">${t.status}</td>
+                        <td>
+                            ${t.status === 'Dipinjam' ? `<button class="btn-primary btn-sm" onclick="prepareReturn('${t.no}')">Kembalikan</button>` : '-'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- Pengembalian ---
+        function searchLoan() {
+            const no = document.getElementById('search-loan-id').value;
+            const trans = DB.get('trans_out');
+            const loan = trans.find(t => t.no === no);
+
+            const container = document.getElementById('loan-details-container');
+            if (!loan) {
+                container.innerHTML = '<p class="text-danger">Data tidak ditemukan atau salah nomor.</p>';
+                return;
+            }
+
+            if (loan.status === 'Kembali') {
+                container.innerHTML = '<p class="text-success">Barang ini sudah dikembalikan.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="card">
+                    <h3>Detail Peminjaman: ${loan.no}</h3>
+                    <p><strong>Peminjam:</strong> ${loan.peminjam} (${loan.unit})</p>
+                    <p><strong>Barang:</strong> ${loan.namaBarang} (${loan.qty} ${loan.kodeBarang})</p>
+                    <p><strong>Jatuh Tempo:</strong> ${loan.tglKembali}</p>
+                    <hr class="mb-4 mt-4">
+                    <h4>Form Pengembalian</h4>
+                    <input type="hidden" id="ret-no" value="${loan.no}">
+                    <label class="text-sm">Tanggal Pengembalian Aktual</label>
+                    <input type="date" id="ret-date" value="${new Date().toISOString().split('T')[0]}">
+                    <label class="text-sm">Kondisi Barang Saat Ini</label>
+                    <input type="text" id="ret-cond" placeholder="Baik / Rusak / Hilang">
+                    <label class="text-sm">Keterangan</label>
+                    <textarea id="ret-note"></textarea>
+                    <label class="text-sm">Foto Bukti</label>
+                    <input type="file">
+                    <button class="btn-primary w-full mt-2" onclick="processReturn()">Proses Pengembalian</button>
+                </div>
+            `;
+        }
+
+        function processReturn() {
+            const no = document.getElementById('ret-no').value;
+            let trans = DB.get('trans_out');
+            let items = DB.get('items');
+            
+            const idx = trans.findIndex(t => t.no === no);
+            if (idx === -1) return;
+
+            // Update Loan Status
+            trans[idx].status = 'Kembali';
+            trans[idx].tglKembaliAktual = document.getElementById('ret-date').value;
+            trans[idx].kondisiKembali = document.getElementById('ret-cond').value;
+            trans[idx].ketKembali = document.getElementById('ret-note').value;
+
+            // Restore Stock
+            const itemIdx = items.findIndex(i => i.kode === trans[idx].kodeBarang);
+            if (itemIdx !== -1) {
+                items[itemIdx].stock = parseInt(items[itemIdx].stock) + parseInt(trans[idx].qty);
+            }
+
+            DB.set('trans_out', trans);
+            DB.set('items', items);
+
+            showToast('Pengembalian berhasil! Stok dikembalikan.', 'success');
+            document.getElementById('loan-details-container').innerHTML = '';
+            renderKeluarTable();
+        }
+        
+        // Shortcut for return from table
+        function prepareReturn(no) {
+            document.getElementById('search-loan-id').value = no;
+            searchLoan();
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        // --- Mutasi ---
+        function saveMutasi(e) {
+            e.preventDefault();
+            const kodeBarang = document.getElementById('mutasi-barang').value;
+            const qty = parseInt(document.getElementById('mutasi-jml').value);
+            const asal = document.getElementById('mutasi-asal').value;
+            const tujuan = document.getElementById('mutasi-tujuan').value;
+
+            if(!kodeBarang || asal === tujuan) { 
+                if(asal === tujuan) showToast('Lokasi asal dan tujuan sama', 'error');
+                else showToast('Data tidak lengkap', 'error');
+                return; 
+            }
+
+            let items = DB.get('items');
+            const itemIdx = items.findIndex(i => i.kode === kodeBarang);
+            
+            // Stock only moves location in terms of record, usually stock count stays same in total, 
+            // but here we might simulate moving qty out of 'General' to specific, or just logging location change.
+            // For this inventory system, let's assume we change the item's location property.
+            
+            items[itemIdx].lokasi = tujuan; // Simplification: Moving stock updates the master location
+            
+            let mut = DB.get('mutations');
+            mut.push({
+                no: document.getElementById('mutasi-no').value,
+                date: document.getElementById('mutasi-tgl').value,
+                kodeBarang: kodeBarang,
+                namaBarang: items[itemIdx].nama,
+                qty: qty,
+                asal: asal,
+                tujuan: tujuan,
+                petugas: document.getElementById('mutasi-petugas').value,
+                nip: document.getElementById('mutasi-nip').value,
+                alasan: document.getElementById('mutasi-alasan').value
+            });
+
+            DB.set('items', items);
+            DB.set('mutations', mut);
+            
+            showToast('Mutasi berhasil', 'success');
+            closeModal('modal-mutasi');
+            e.target.reset();
+            generateAutoNumbers();
+            renderMutasiTable();
+        }
+
+        function renderMutasiTable() {
+            const mut = DB.get('mutations').reverse();
+            const tbody = document.querySelector('#table-mutasi tbody');
+            tbody.innerHTML = '';
+            mut.forEach(m => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${m.no}</td>
+                        <td>${m.date}</td>
+                        <td>${m.namaBarang}</td>
+                        <td>${m.asal}</td>
+                        <td>${m.tujuan}</td>
+                        <td>${m.qty}</td>
+                        <td>${m.petugas}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- Stok Table ---
+        function renderStockTable() {
+            const items = DB.get('items');
+            const nameFilter = document.getElementById('filter-stok-name').value.toLowerCase();
+            const catFilter = document.getElementById('filter-stok-cat').value;
+            
+            const tbody = document.querySelector('#table-stok tbody');
+            tbody.innerHTML = '';
+            
+            items.filter(i => {
+                return i.nama.toLowerCase().includes(nameFilter) && 
+                       (catFilter === '' || i.kategori === catFilter);
+            }).forEach(i => {
+                let status = 'Aman';
+                let color = 'text-success';
+                if (i.stock <= 0) { status = 'Kosong'; color = 'text-danger font-bold'; }
+                else if (i.stock <= i.min) { status = 'Menipis'; color = 'text-warning font-bold'; }
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${i.kode}</td>
+                        <td>${i.nama}</td>
+                        <td>${i.kategori}</td>
+                        <td class="${color}">${i.stock}</td>
+                        <td>${i.min}</td>
+                        <td class="${color}">${status}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- Laporan ---
+        function generateReport() {
+            const type = document.getElementById('report-type').value;
+            const start = document.getElementById('report-start').value;
+            const end = document.getElementById('report-end').value;
+            const container = document.getElementById('report-result');
+
+            if(!start || !end) { showToast('Pilih rentang tanggal', 'error'); return; }
+
+            let data = [];
+            let headers = [];
+            let title = '';
+
+            if (type === 'masuk') {
+                title = 'Laporan Barang Masuk';
+                headers = ['No', 'Tgl', 'Barang', 'Jml', 'Penerima'];
+                data = DB.get('trans_in').filter(t => t.date >= start && t.date <= end);
+            } else if (type === 'keluar') {
+                title = 'Laporan Barang Keluar';
+                headers = ['No', 'Tgl', 'Barang', 'Jml', 'Peminjam', 'Status'];
+                data = DB.get('trans_out').filter(t => t.date >= start && t.date <= end);
+            } else if (type === 'mutasi') {
+                title = 'Laporan Mutasi';
+                headers = ['No', 'Tgl', 'Barang', 'Asal', 'Tujuan', 'Petugas'];
+                data = DB.get('mutations').filter(t => t.date >= start && t.date <= end);
+            } else if (type === 'stok') {
+                title = 'Rekapitulasi Stok Per ' + end;
+                headers = ['Kode', 'Nama', 'Kategori', 'Stok Akhir'];
+                data = DB.get('items');
+            }
+
+            let html = `<h3 class="p-4 mb-0">${title} (${start} s/d ${end})</h3><table class="w-full"><thead><tr>`;
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += `</tr></thead><tbody>`;
+
+            data.forEach(d => {
+                html += `<tr>`;
+                if (type === 'masuk') {
+                    html += `<td>${d.no}</td><td>${d.date}</td><td>${d.namaBarang}</td><td>${d.qty}</td><td>${d.penerima}</td>`;
+                } else if (type === 'keluar') {
+                    html += `<td>${d.no}</td><td>${d.date}</td><td>${d.namaBarang}</td><td>${d.qty}</td><td>${d.peminjam}</td><td>${d.status}</td>`;
+                } else if (type === 'mutasi') {
+                    html += `<td>${d.no}</td><td>${d.date}</td><td>${d.namaBarang}</td><td>${d.asal}</td><td>${d.tujuan}</td><td>${d.petugas}</td>`;
+                } else if (type === 'stok') {
+                    html += `<td>${d.kode}</td><td>${d.nama}</td><td>${d.kategori}</td><td>${d.stock}</td>`;
+                }
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function exportExcel() {
+            // Simple CSV Export Simulation
+            const table = document.querySelector('#report-result table');
+            if (!table) { showToast('Tampilkan laporan dahulu', 'error'); return; }
+            
+            let csv = [];
+            let rows = table.querySelectorAll('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll('td, th');
+                for (let j = 0; j < cols.length; j++) 
+                    row.push(cols[j].innerText);
+                csv.push(row.join(","));        
+            }
+
+            const csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+            const downloadLink = document.createElement("a");
+            downloadLink.download = "laporan_gudang.csv";
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            showToast('File CSV berhasil diunduh', 'success');
+        }
+
+        // --- UI Utilities ---
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        function simulateScan(targetId) {
+            // Simulate scanning a barcode
+            showToast('Mengakses kamera...', 'info');
+            setTimeout(() => {
+                const items = DB.get('items');
+                if (items.length > 0) {
+                    const randomItem = items[Math.floor(Math.random() * items.length)];
+                    const select = document.getElementById(targetId);
+                    select.value = randomItem.kode;
+                    showToast(`Barcode terdeteksi: ${randomItem.nama}`, 'success');
+                } else {
+                    showToast('Tidak ada barang untuk discan', 'error');
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
